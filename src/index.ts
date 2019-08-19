@@ -6,7 +6,8 @@ import {
   interval,
   of,
   BehaviorSubject,
-  EMPTY
+  EMPTY,
+  OperatorFunction
 } from 'rxjs';
 import {
   take,
@@ -61,7 +62,7 @@ user1$.subscribe(() => dispatcher.next({ userId: 1 }));
 const user2$: Observable<Event> = fromEvent(button2, 'click');
 user2$.subscribe(() => dispatcher.next({ userId: 2 }));
 
-const dispatcher = new BehaviorSubject(null);
+const dispatcher = new BehaviorSubject<User>(null as any);
 
 const actions$ = dispatcher.asObservable().pipe(
   filter(value => value !== null),
@@ -98,25 +99,25 @@ actionsNoGroup$.subscribe(data => {
   addToOutput(`Plain exhaustMap: User ${data[0].userId} complete`);
 });
 
-// function exhaustMapByKey<T, V>(
-//   keySelector: (item: T) => number,
-//   mapFn: (item: T) => Observable<V>
-// ): Operator<T, V> {
-//   return observable$ =>
-//     observable$.pipe(
-//       groupBy(
-//         keySelector,
-//         item => item,
-//         itemsByGroup$ =>
-//           itemsByGroup$.pipe(
-//             timeoutWith(15000, EMPTY),
-//             ignoreElements()
-//           )
-//       ),
-//       map((itemGroup$: Observable<T>) => itemGroup$.pipe(exhaustMap(mapFn))),
-//       mergeAll()
-//     );
-// }
+function exhaustMapByKey<T, V>(
+  keySelector: (item: T) => number,
+  mapFn: (item: T) => Observable<V>
+): OperatorFunction<T, V> {
+  return observable$ =>
+    observable$.pipe(
+      groupBy(
+        keySelector,
+        item => item,
+        itemsByGroup$ =>
+          itemsByGroup$.pipe(
+            timeoutWith(15000, EMPTY),
+            ignoreElements()
+          )
+      ),
+      map((itemGroup$: Observable<T>) => itemGroup$.pipe(exhaustMap(mapFn))),
+      mergeAll()
+    );
+}
 
 // const actions2$ = dispatcher
 //   .asObservable()
