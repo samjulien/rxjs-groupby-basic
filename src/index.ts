@@ -119,16 +119,15 @@ function exhaustMapByKey<T, V>(
     );
 }
 
-// const actions2$ = dispatcher
-//   .asObservable()
-//   .pipe(
-//     exhaustMapByKey(
-//       (user: User) => user.userId,
-//       (user: User) =>
-//         fromFetch(buildUrl(user.userId)).pipe(mergeMap(res => res.json()))
-//     )
-//   );
+const actions2$ = dispatcher.asObservable().pipe(
+  filter(value => value !== null),
+  exhaustMapByKey(
+    (user: User) => user.userId,
+    (user: User) =>
+      fromFetch(buildUrl(user.userId)).pipe(mergeMap(res => res.json()))
+  )
+);
 
-// actions2$.subscribe(data => {
-//   console.log(`user: ${data[0].userId}`);
-// });
+actions2$.subscribe(data => {
+  addToOutput(`Using custom operator: User ${data[0].userId} complete`);
+});
