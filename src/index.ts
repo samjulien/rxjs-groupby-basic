@@ -1,5 +1,13 @@
-import { Observable, fromEvent, BehaviorSubject } from 'rxjs';
-import { tap, filter, mergeMap } from 'rxjs/operators';
+import { Observable, fromEvent, BehaviorSubject, EMPTY } from 'rxjs';
+import {
+  tap,
+  filter,
+  mergeMap,
+  groupBy,
+  timeoutWith,
+  ignoreElements,
+  exhaustMap
+} from 'rxjs/operators';
 import {
   setButtonEmoji,
   globalButtonState,
@@ -24,9 +32,22 @@ const dispatcher = new BehaviorSubject<Movie>(null as any);
 
 const actions$ = dispatcher.asObservable().pipe(
   filter(value => value !== null),
-  mergeMap(movie =>
-    fakeEndpoint(movie.movieId).pipe(
-      tap(({ movieId }) => setButtonEmoji(movieId))
+  groupBy(
+    movie => movie.movieId,
+    movie => movie,
+    actionsByGroup$ =>
+      actionsByGroup$.pipe(
+        timeoutWith(15000, EMPTY),
+        ignoreElements() /* filter(() => false), */
+      )
+  ),
+  mergeMap(group$ =>
+    group$.pipe(
+      exhaustMap(movie =>
+        fakeEndpoint(movie.movieId).pipe(
+          tap(({ movieId }) => setButtonEmoji(movieId))
+        )
+      )
     )
   )
 );
@@ -34,7 +55,7 @@ const actions$ = dispatcher.asObservable().pipe(
 actions$.subscribe((data: Movie) => {
   let button = `button${data.movieId}`;
   addToOutput(
-    `Plain mergeMap: Movie ${data.movieId} complete; state: ${
+    `groupBy & exhaustMap: Movie ${data.movieId} complete; state: ${
       globalButtonState[button]
     }`
   );
