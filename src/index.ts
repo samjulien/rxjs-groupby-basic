@@ -1,5 +1,5 @@
 import { Observable, fromEvent, BehaviorSubject } from 'rxjs';
-import { tap, filter, mergeMap } from 'rxjs/operators';
+import { tap, filter, switchMap } from 'rxjs/operators';
 import {
   setButtonEmoji,
   globalButtonState,
@@ -24,7 +24,7 @@ const dispatcher = new BehaviorSubject<Movie>(null as any);
 
 const actions$ = dispatcher.asObservable().pipe(
   filter(value => value !== null),
-  mergeMap(movie =>
+  switchMap(movie =>
     fakeEndpoint(movie.movieId).pipe(
       tap(({ movieId }) => setButtonEmoji(movieId))
     )
@@ -34,7 +34,7 @@ const actions$ = dispatcher.asObservable().pipe(
 actions$.subscribe((data: Movie) => {
   let button = `button${data.movieId}`;
   addToOutput(
-    `Plain mergeMap: Movie ${data.movieId} complete; state: ${
+    `Plain switchMap: Movie ${data.movieId} complete; state: ${
       globalButtonState[button]
     }`
   );
