@@ -1,5 +1,20 @@
-import { Observable, fromEvent, BehaviorSubject } from 'rxjs';
-import { tap, filter, mergeMap } from 'rxjs/operators';
+import {
+  Observable,
+  fromEvent,
+  BehaviorSubject,
+  OperatorFunction,
+  EMPTY
+} from 'rxjs';
+import {
+  tap,
+  filter,
+  groupBy,
+  timeoutWith,
+  ignoreElements,
+  map,
+  exhaustMap,
+  mergeAll
+} from 'rxjs/operators';
 import {
   setButtonEmoji,
   globalButtonState,
@@ -22,19 +37,41 @@ movie2$.subscribe(() => dispatcher.next({ movieId: 2 }));
 
 const dispatcher = new BehaviorSubject<Movie>(null as any);
 
+function exhaustMapByKey<T, V>(
+  keySelector: (item: T) => number,
+  mapFn: (item: T) => Observable<V>
+): OperatorFunction<T, V> {
+  return observable$ =>
+    observable$.pipe(
+      groupBy(
+        keySelector,
+        item => item,
+        itemsByGroup$ =>
+          itemsByGroup$.pipe(
+            timeoutWith(15000, EMPTY),
+            ignoreElements()
+          )
+      ),
+      map((itemGroup$: Observable<T>) => itemGroup$.pipe(exhaustMap(mapFn))),
+      mergeAll()
+    );
+}
+
 const actions$ = dispatcher.asObservable().pipe(
   filter(value => value !== null),
-  mergeMap(movie =>
-    fakeEndpoint(movie.movieId).pipe(
-      tap(({ movieId }) => setButtonEmoji(movieId))
-    )
+  exhaustMapByKey(
+    (movie: Movie) => movie.movieId,
+    (movie: Movie) =>
+      fakeEndpoint(movie.movieId).pipe(
+        tap(({ movieId }) => setButtonEmoji(movieId))
+      )
   )
 );
 
 actions$.subscribe((data: Movie) => {
   let button = `button${data.movieId}`;
   addToOutput(
-    `Plain mergeMap: Movie ${data.movieId} complete; state: ${
+    `Custom operator: Movie ${data.movieId} complete; state: ${
       globalButtonState[button]
     }`
   );
