@@ -1,54 +1,83 @@
 body {
-  font-family: Verdana, Helvetica, sans-serif;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande',
+    'Lucida Sans', Arial, sans-serif;
+  background: lightgrey;
+}
+
+h1 {
+  text-align: center;
+}
+
+img {
+  border-radius: 10px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  justify-content: center;
+  flex: 1;
+}
+
+.center {
+  text-align: center;
 }
 
 .shadow-button {
-  display: inline-block;
-  padding: 15px 25px;
-  font-size: 24px;
+  margin: 10px 0 10px 0;
+  width: 250px;
+  height: 75px;
+  padding: 10px;
+  font-size: 50px;
   cursor: pointer;
   text-align: center;
   text-decoration: none;
   outline: none;
   color: #fff;
-  background-color: #af4c87;
+  background-color: grey;
   border: none;
   border-radius: 10px;
   box-shadow: 0 9px #999;
 }
 
 .shadow-button:hover {
-  background-color: #943c71;
+  background-color: #423f41;
 }
 
 .shadow-button:active {
-  background-color: #943c71;
+  background-color: #423f41;
   box-shadow: 0 5px #666;
   transform: translateY(4px);
 }
 
 .container {
-  display: flex;
-  max-width: 650px;
-  margin: auto;
-}
-
-.item {
-  padding: 20px;
+  max-width: 800px;
   margin: auto;
 }
 
 .console {
-  background: darkslategrey;
-  width: 600px;
-  height: 600px;
+  font-family: 'Dank Mono', Courier, monospace;
+  font-weight: 600;
+  background: rgb(40, 49, 57);
+  width: 700px;
+  height: 400px;
   color: white;
   padding: 20px;
+  margin: 15px auto;
 }
 
 .console-header {
   display: flex;
   font-size: 24px;
+  font-weight: 800;
   justify-content: space-between;
 }
 
@@ -67,7 +96,7 @@ body {
 ul {
   list-style: none;
   padding: 0px;
-  font-size: 24px;
+  font-size: 22px;
 }
 
 ul li:before {

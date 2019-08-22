@@ -23,7 +23,8 @@ import {
   zip,
   filter,
   timeoutWith,
-  ignoreElements
+  ignoreElements,
+  delay
 } from 'rxjs/operators';
 import { fromFetch } from 'rxjs/fetch';
 
@@ -36,8 +37,31 @@ interface User {
   userId: number;
 }
 
+let globalButtonState = {
+  button1: false,
+  button2: false
+};
+
 function buildUrl(userId?: number): string {
   return `https://jsonplaceholder.typicode.com/todos?userId=${userId}`;
+}
+
+function setButtonEmoji(userId) {
+  let buttonState = globalButtonState[`button${userId}`];
+  let buttonEl = document.querySelector(`#user${userId}`);
+  buttonEl.innerHTML = buttonState ? '😃' : '😩';
+}
+
+function fakeEndpoint(userId?: number): Observable<User> {
+  let randomDelay = Math.floor(Math.random() * 1000);
+  return of({ userId }).pipe(
+    tap(({ userId }) => {
+      let button = `button${userId}`;
+      globalButtonState[button] = !globalButtonState[button];
+      // setButtonEmoji(userId);
+    }),
+    delay(800)
+  );
 }
 
 function addToOutput(text: string) {
@@ -78,25 +102,37 @@ const actions$ = dispatcher.asObservable().pipe(
   mergeMap(group$ =>
     group$.pipe(
       exhaustMap(user =>
-        fromFetch(buildUrl(user.userId)).pipe(mergeMap(res => res.json()))
+        fakeEndpoint(user.userId).pipe(
+          tap(({ userId }) => setButtonEmoji(userId))
+        )
       )
     )
   )
 );
 
-actions$.subscribe(data => {
-  addToOutput(`With groupBy: User ${data[0].userId} complete`);
-});
+// actions$.subscribe((data: User) => {
+//   let button = `button${data.userId}`;
+//   addToOutput(
+//     `With groupBy: User ${data.userId} complete; state: ${
+//       globalButtonState[button]
+//     }`
+//   );
+// });
 
 const actionsNoGroup$ = dispatcher.asObservable().pipe(
   filter(value => value !== null),
   exhaustMap(user =>
-    fromFetch(buildUrl(user.userId)).pipe(mergeMap(res => res.json()))
+    fakeEndpoint(user.userId).pipe(tap(({ userId }) => setButtonEmoji(userId)))
   )
 );
 
-actionsNoGroup$.subscribe(data => {
-  addToOutput(`Plain exhaustMap: User ${data[0].userId} complete`);
+actionsNoGroup$.subscribe((data: User) => {
+  let button = `button${data.userId}`;
+  addToOutput(
+    `Plain exhaustMap: User ${data.userId} complete; state: ${
+      globalButtonState[button]
+    }`
+  );
 });
 
 function exhaustMapByKey<T, V>(
@@ -124,10 +160,17 @@ const actions2$ = dispatcher.asObservable().pipe(
   exhaustMapByKey(
     (user: User) => user.userId,
     (user: User) =>
-      fromFetch(buildUrl(user.userId)).pipe(mergeMap(res => res.json()))
+      fakeEndpoint(user.userId).pipe(
+        tap(({ userId }) => setButtonEmoji(userId))
+      )
   )
 );
 
-actions2$.subscribe(data => {
-  addToOutput(`Using custom operator: User ${data[0].userId} complete`);
-});
+// actions2$.subscribe((data: User) => {
+//   let button = `button${data.userId}`;
+//   addToOutput(
+//     `Using custom operator: User ${data.userId} complete; state: ${
+//       globalButtonState[button]
+//     }`
+//   );
+// });
