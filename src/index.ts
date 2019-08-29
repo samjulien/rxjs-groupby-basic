@@ -12,7 +12,7 @@ import {
   timeoutWith,
   ignoreElements,
   map,
-  exhaustMap,
+  switchMap,
   mergeAll
 } from 'rxjs/operators';
 import {
@@ -37,7 +37,7 @@ movie2$.subscribe(() => dispatcher.next({ movieId: 2 }));
 
 const dispatcher = new BehaviorSubject<Movie>(null as any);
 
-function exhaustMapByKey<T, V>(
+function switchMapByKey<T, V>(
   keySelector: (item: T) => number,
   mapFn: (item: T) => Observable<V>
 ): OperatorFunction<T, V> {
@@ -52,14 +52,14 @@ function exhaustMapByKey<T, V>(
             ignoreElements()
           )
       ),
-      map((itemGroup$: Observable<T>) => itemGroup$.pipe(exhaustMap(mapFn))),
+      map((itemGroup$: Observable<T>) => itemGroup$.pipe(switchMap(mapFn))),
       mergeAll()
     );
 }
 
 const actions$ = dispatcher.asObservable().pipe(
   filter(value => value !== null),
-  exhaustMapByKey(
+  switchMapByKey(
     (movie: Movie) => movie.movieId,
     (movie: Movie) =>
       fakeEndpoint(movie.movieId).pipe(
@@ -71,8 +71,6 @@ const actions$ = dispatcher.asObservable().pipe(
 actions$.subscribe((data: Movie) => {
   let button = `button${data.movieId}`;
   addToOutput(
-    `Custom operator: Movie ${data.movieId} complete; state: ${
-      globalButtonState[button]
-    }`
+    `Custom operator: Movie ${data.movieId} complete; state: ${globalButtonState[button]}`
   );
 });
