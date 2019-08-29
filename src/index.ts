@@ -6,7 +6,7 @@ import {
   groupBy,
   timeoutWith,
   ignoreElements,
-  exhaustMap
+  switchMap
 } from 'rxjs/operators';
 import {
   setButtonEmoji,
@@ -43,7 +43,7 @@ const actions$ = dispatcher.asObservable().pipe(
   ),
   mergeMap(group$ =>
     group$.pipe(
-      exhaustMap(movie =>
+      switchMap(movie =>
         fakeEndpoint(movie.movieId).pipe(
           tap(({ movieId }) => setButtonEmoji(movieId))
         )
@@ -55,8 +55,6 @@ const actions$ = dispatcher.asObservable().pipe(
 actions$.subscribe((data: Movie) => {
   let button = `button${data.movieId}`;
   addToOutput(
-    `groupBy & exhaustMap: Movie ${data.movieId} complete; state: ${
-      globalButtonState[button]
-    }`
+    `groupBy & switchMap: Movie ${data.movieId} complete; state: ${globalButtonState[button]}`
   );
 });
