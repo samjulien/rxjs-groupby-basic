@@ -6,7 +6,7 @@ let globalButtonState = {
   button2: false
 };
 
-export let databaseState = {
+let databaseState = {
   button1: false,
   button2: false
 };
@@ -25,7 +25,7 @@ export const addToOutput = (text: string) => {
 };
 
 export const clearOutput = () => {
-  let list = document.getElementById('output'); // Get the <ul> element with id="myList"
+  let list = document.getElementById('output');
   list.innerHTML = '';
 };
 
