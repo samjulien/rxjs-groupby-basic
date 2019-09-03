@@ -2,7 +2,7 @@ import { Observable, fromEvent, Subject } from 'rxjs';
 import { tap, mergeMap } from 'rxjs/operators';
 import {
   setButtonEmoji,
-  globalButtonState,
+  databaseState,
   clearOutput,
   addToOutput,
   Movie,
@@ -29,7 +29,5 @@ const actions$ = dispatcher.asObservable().pipe(
 
 actions$.subscribe((data: Movie) => {
   let button = `button${data.movieId}`;
-  addToOutput(
-    `Plain mergeMap: Movie ${data.movieId} complete; state: ${globalButtonState[button]}`
-  );
+  addToOutput(`Plain mergeMap: Movie ${data.movieId} complete; state: ${databaseState[button]}`);
 });
