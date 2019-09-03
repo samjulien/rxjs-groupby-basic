@@ -34,11 +34,13 @@ export interface Movie {
 }
 
 export const toggleStatus = (movieId?: number): Observable<Movie> => {
+  const button = `button${movieId}`;
+  const randomDelay = Math.floor(Math.random() * 1000);
+
   return of({ movieId }).pipe(
-    tap(({ movieId }) => {
-      let button = `button${movieId}`;
+    delay(randomDelay),
+    tap(() => {
       databaseState[button] = !databaseState[button];
-    }),
-    delay(800)
+    })
   );
 };

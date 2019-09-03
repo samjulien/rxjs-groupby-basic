@@ -29,7 +29,5 @@ const actions$ = dispatcher.asObservable().pipe(
 
 actions$.subscribe((data: Movie) => {
   let button = `button${data.movieId}`;
-  addToOutput(
-    `Plain concatMap: Movie ${data.movieId} complete; db state: ${databaseState[button]}`
-  );
+  addToOutput(`Plain concatMap: Movie ${data.movieId} complete; state: ${databaseState[button]}`);
 });
