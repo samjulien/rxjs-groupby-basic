@@ -1,4 +1,4 @@
-import { Observable, fromEvent, BehaviorSubject, EMPTY } from 'rxjs';
+import { Observable, fromEvent, Subject, EMPTY } from 'rxjs';
 import {
   tap,
   filter,
@@ -14,7 +14,7 @@ import {
   clearOutput,
   addToOutput,
   Movie,
-  fakeEndpoint
+  toggleStatus
 } from './helpers';
 
 document.querySelector('#clear-output').addEventListener('click', clearOutput);
@@ -28,10 +28,10 @@ movie1$.subscribe(() => dispatcher.next({ movieId: 1 }));
 const movie2$: Observable<Event> = fromEvent(button2, 'click');
 movie2$.subscribe(() => dispatcher.next({ movieId: 2 }));
 
-const dispatcher = new BehaviorSubject<Movie>(null as any);
+const dispatcher = new Subject<Movie>();
 
 const actions$ = dispatcher.asObservable().pipe(
-  filter(value => value !== null),
+  tap(({ movieId }) => setButtonEmoji(movieId)),
   groupBy(
     movie => movie.movieId,
     movie => movie,
@@ -42,13 +42,7 @@ const actions$ = dispatcher.asObservable().pipe(
       )
   ),
   mergeMap(group$ =>
-    group$.pipe(
-      switchMap(movie =>
-        fakeEndpoint(movie.movieId).pipe(
-          tap(({ movieId }) => setButtonEmoji(movieId))
-        )
-      )
-    )
+    group$.pipe(switchMap(movie => toggleStatus(movie.movieId)))
   )
 );
 
