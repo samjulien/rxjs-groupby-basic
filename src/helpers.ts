@@ -1,15 +1,20 @@
 import { Observable, of } from 'rxjs';
-import { tap, delay } from 'rxjs/operators';
+import { delay } from 'rxjs/operators';
 
-export let globalButtonState = {
+let globalButtonState = {
+  button1: false,
+  button2: false
+};
+
+let databaseState = {
   button1: false,
   button2: false
 };
 
 export const setButtonEmoji = (movieId: number) => {
-  let buttonState = globalButtonState[`button${movieId}`];
+  globalButtonState[`button${movieId}`] = !globalButtonState[`button${movieId}`];
   let buttonEl = document.querySelector(`#movie${movieId}`);
-  buttonEl.innerHTML = buttonState ? '😃' : '😩';
+  buttonEl.innerHTML = globalButtonState[`button${movieId}`] ? '😃' : '😩';
 };
 
 export const addToOutput = (text: string) => {
@@ -20,20 +25,19 @@ export const addToOutput = (text: string) => {
 };
 
 export const clearOutput = () => {
-  let list = document.getElementById('output'); // Get the <ul> element with id="myList"
+  let list = document.getElementById('output');
   list.innerHTML = '';
 };
 
 export interface Movie {
   movieId: number;
+  status?: boolean;
 }
 
-export const fakeEndpoint = (movieId?: number): Observable<Movie> => {
-  return of({ movieId }).pipe(
-    tap(({ movieId }) => {
-      let button = `button${movieId}`;
-      globalButtonState[button] = !globalButtonState[button];
-    }),
-    delay(800)
-  );
+export const toggleStatus = (movieId: number): Observable<Movie> => {
+  const button = `button${movieId}`;
+  const randomDelay = Math.floor(Math.random() * 1000);
+  databaseState[button] = !databaseState[button];
+
+  return of({ movieId, status: databaseState[button] }).pipe(delay(randomDelay));
 };

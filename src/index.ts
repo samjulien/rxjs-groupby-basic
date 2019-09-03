@@ -1,13 +1,6 @@
-import {
-  Observable,
-  fromEvent,
-  BehaviorSubject,
-  OperatorFunction,
-  EMPTY
-} from 'rxjs';
+import { Observable, fromEvent, Subject, OperatorFunction, EMPTY } from 'rxjs';
 import {
   tap,
-  filter,
   groupBy,
   timeoutWith,
   ignoreElements,
@@ -15,14 +8,7 @@ import {
   switchMap,
   mergeAll
 } from 'rxjs/operators';
-import {
-  setButtonEmoji,
-  globalButtonState,
-  clearOutput,
-  addToOutput,
-  Movie,
-  fakeEndpoint
-} from './helpers';
+import { setButtonEmoji, clearOutput, addToOutput, Movie, toggleStatus } from './helpers';
 
 document.querySelector('#clear-output').addEventListener('click', clearOutput);
 
@@ -35,7 +21,7 @@ movie1$.subscribe(() => dispatcher.next({ movieId: 1 }));
 const movie2$: Observable<Event> = fromEvent(button2, 'click');
 movie2$.subscribe(() => dispatcher.next({ movieId: 2 }));
 
-const dispatcher = new BehaviorSubject<Movie>(null as any);
+const dispatcher = new Subject<Movie>();
 
 function switchMapByKey<T, V>(
   keySelector: (item: T) => number,
@@ -58,19 +44,10 @@ function switchMapByKey<T, V>(
 }
 
 const actions$ = dispatcher.asObservable().pipe(
-  filter(value => value !== null),
-  switchMapByKey(
-    (movie: Movie) => movie.movieId,
-    (movie: Movie) =>
-      fakeEndpoint(movie.movieId).pipe(
-        tap(({ movieId }) => setButtonEmoji(movieId))
-      )
-  )
+  tap(({ movieId }) => setButtonEmoji(movieId)),
+  switchMapByKey((movie: Movie) => movie.movieId, (movie: Movie) => toggleStatus(movie.movieId))
 );
 
 actions$.subscribe((data: Movie) => {
-  let button = `button${data.movieId}`;
-  addToOutput(
-    `Custom operator: Movie ${data.movieId} complete; state: ${globalButtonState[button]}`
-  );
+  addToOutput(`Custom operator: Movie ${data.movieId} complete; state: ${data.status}`);
 });
