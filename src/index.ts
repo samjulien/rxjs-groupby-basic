@@ -1,13 +1,6 @@
 import { Observable, fromEvent, Subject } from 'rxjs';
 import { tap, concatMap } from 'rxjs/operators';
-import {
-  setButtonEmoji,
-  clearOutput,
-  addToOutput,
-  Movie,
-  toggleStatus,
-  databaseState
-} from './helpers';
+import { setButtonEmoji, clearOutput, addToOutput, Movie, toggleStatus } from './helpers';
 
 document.querySelector('#clear-output').addEventListener('click', clearOutput);
 
@@ -28,6 +21,5 @@ const actions$ = dispatcher.asObservable().pipe(
 );
 
 actions$.subscribe((data: Movie) => {
-  let button = `button${data.movieId}`;
-  addToOutput(`Plain concatMap: Movie ${data.movieId} complete; state: ${databaseState[button]}`);
+  addToOutput(`Plain concatMap: Movie ${data.movieId} complete; state: ${data.status}`);
 });
