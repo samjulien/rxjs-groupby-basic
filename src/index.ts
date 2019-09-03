@@ -1,12 +1,12 @@
-import { Observable, fromEvent, BehaviorSubject } from 'rxjs';
-import { tap, filter, mergeMap } from 'rxjs/operators';
+import { Observable, fromEvent, Subject } from 'rxjs';
+import { tap, mergeMap } from 'rxjs/operators';
 import {
   setButtonEmoji,
   globalButtonState,
   clearOutput,
   addToOutput,
   Movie,
-  fakeEndpoint
+  toggleStatus
 } from './helpers';
 
 document.querySelector('#clear-output').addEventListener('click', clearOutput);
@@ -20,22 +20,16 @@ movie1$.subscribe(() => dispatcher.next({ movieId: 1 }));
 const movie2$: Observable<Event> = fromEvent(button2, 'click');
 movie2$.subscribe(() => dispatcher.next({ movieId: 2 }));
 
-const dispatcher = new BehaviorSubject<Movie>(null as any);
+const dispatcher = new Subject<Movie>();
 
 const actions$ = dispatcher.asObservable().pipe(
-  filter(value => value !== null),
-  mergeMap(movie =>
-    fakeEndpoint(movie.movieId).pipe(
-      tap(({ movieId }) => setButtonEmoji(movieId))
-    )
-  )
+  tap(({ movieId }) => setButtonEmoji(movieId)),
+  mergeMap(movie => toggleStatus(movie.movieId))
 );
 
 actions$.subscribe((data: Movie) => {
   let button = `button${data.movieId}`;
   addToOutput(
-    `Plain mergeMap: Movie ${data.movieId} complete; state: ${
-      globalButtonState[button]
-    }`
+    `Plain mergeMap: Movie ${data.movieId} complete; state: ${globalButtonState[button]}`
   );
 });
