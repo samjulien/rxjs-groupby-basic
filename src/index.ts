@@ -1,12 +1,12 @@
-import { Observable, fromEvent, BehaviorSubject } from 'rxjs';
-import { tap, filter, switchMap } from 'rxjs/operators';
+import { Observable, fromEvent, Subject } from 'rxjs';
+import { tap, switchMap } from 'rxjs/operators';
 import {
   setButtonEmoji,
-  globalButtonState,
+  databaseState,
   clearOutput,
   addToOutput,
   Movie,
-  fakeEndpoint
+  toggleStatus
 } from './helpers';
 
 document.querySelector('#clear-output').addEventListener('click', clearOutput);
@@ -20,22 +20,14 @@ movie1$.subscribe(() => dispatcher.next({ movieId: 1 }));
 const movie2$: Observable<Event> = fromEvent(button2, 'click');
 movie2$.subscribe(() => dispatcher.next({ movieId: 2 }));
 
-const dispatcher = new BehaviorSubject<Movie>(null as any);
+const dispatcher = new Subject<Movie>();
 
 const actions$ = dispatcher.asObservable().pipe(
-  filter(value => value !== null),
-  switchMap(movie =>
-    fakeEndpoint(movie.movieId).pipe(
-      tap(({ movieId }) => setButtonEmoji(movieId))
-    )
-  )
+  tap(({ movieId }) => setButtonEmoji(movieId)),
+  switchMap(movie => toggleStatus(movie.movieId))
 );
 
 actions$.subscribe((data: Movie) => {
   let button = `button${data.movieId}`;
-  addToOutput(
-    `Plain switchMap: Movie ${data.movieId} complete; state: ${
-      globalButtonState[button]
-    }`
-  );
+  addToOutput(`Plain switchMap: Movie ${data.movieId} complete; state: ${databaseState[button]}`);
 });

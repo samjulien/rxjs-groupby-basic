@@ -1,15 +1,20 @@
 import { Observable, of } from 'rxjs';
 import { tap, delay } from 'rxjs/operators';
 
-export let globalButtonState = {
+let globalButtonState = {
+  button1: false,
+  button2: false
+};
+
+export let databaseState = {
   button1: false,
   button2: false
 };
 
 export const setButtonEmoji = (movieId: number) => {
-  let buttonState = globalButtonState[`button${movieId}`];
+  globalButtonState[`button${movieId}`] = !globalButtonState[`button${movieId}`];
   let buttonEl = document.querySelector(`#movie${movieId}`);
-  buttonEl.innerHTML = buttonState ? '😃' : '😩';
+  buttonEl.innerHTML = globalButtonState[`button${movieId}`] ? '😃' : '😩';
 };
 
 export const addToOutput = (text: string) => {
@@ -28,12 +33,14 @@ export interface Movie {
   movieId: number;
 }
 
-export const fakeEndpoint = (movieId?: number): Observable<Movie> => {
+export const toggleStatus = (movieId: number): Observable<Movie> => {
+  const button = `button${movieId}`;
+  const randomDelay = Math.floor(Math.random() * 1000);
+
   return of({ movieId }).pipe(
-    tap(({ movieId }) => {
-      let button = `button${movieId}`;
-      globalButtonState[button] = !globalButtonState[button];
-    }),
-    delay(800)
+    delay(randomDelay),
+    tap(() => {
+      databaseState[button] = !databaseState[button];
+    })
   );
 };
