@@ -1,12 +1,12 @@
 import { Observable, of } from 'rxjs';
 import { tap, delay } from 'rxjs/operators';
 
-export let globalButtonState = {
+let globalButtonState = {
   button1: false,
   button2: false
 };
 
-let databaseState = {
+export let databaseState = {
   button1: false,
   button2: false
 };
@@ -34,11 +34,13 @@ export interface Movie {
 }
 
 export const toggleStatus = (movieId: number): Observable<Movie> => {
+  const button = `button${movieId}`;
+  const randomDelay = Math.floor(Math.random() * 1000);
+
   return of({ movieId }).pipe(
-    tap(({ movieId }) => {
-      let button = `button${movieId}`;
-      databaseState[button] = globalButtonState[button];
+    tap(() => {
+      databaseState[button] = !databaseState[button];
     }),
-    delay(800)
+    delay(randomDelay)
   );
 };

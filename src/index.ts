@@ -1,16 +1,8 @@
 import { Observable, fromEvent, Subject, EMPTY } from 'rxjs';
-import {
-  tap,
-  filter,
-  mergeMap,
-  groupBy,
-  timeoutWith,
-  ignoreElements,
-  switchMap
-} from 'rxjs/operators';
+import { tap, mergeMap, groupBy, timeoutWith, ignoreElements, switchMap } from 'rxjs/operators';
 import {
   setButtonEmoji,
-  globalButtonState,
+  databaseState,
   clearOutput,
   addToOutput,
   Movie,
@@ -38,17 +30,15 @@ const actions$ = dispatcher.asObservable().pipe(
     actionsByGroup$ =>
       actionsByGroup$.pipe(
         timeoutWith(15000, EMPTY),
-        ignoreElements() /* filter(() => false), */
+        ignoreElements()
       )
   ),
-  mergeMap(group$ =>
-    group$.pipe(switchMap(movie => toggleStatus(movie.movieId)))
-  )
+  mergeMap(group$ => group$.pipe(switchMap(movie => toggleStatus(movie.movieId))))
 );
 
 actions$.subscribe((data: Movie) => {
   let button = `button${data.movieId}`;
   addToOutput(
-    `groupBy & switchMap: Movie ${data.movieId} complete; state: ${globalButtonState[button]}`
+    `groupBy & switchMap: Movie ${data.movieId} complete; state: ${databaseState[button]}`
   );
 });
